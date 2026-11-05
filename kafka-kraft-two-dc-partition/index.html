@@ -33,6 +33,7 @@
   --artifact-e8: #159a6a;
   --artifact-on-epoch: #ffffff;
   --artifact-quorum-fill: #eef2fd;
+  --artifact-eB: #7c4ddb;
   --artifact-tip-bg: #0d0f14;
   --artifact-tip-text: #f5f7fb;
 }
@@ -63,6 +64,7 @@ html[data-theme='dark'] {
   --artifact-e8: #46d39a;
   --artifact-on-epoch: #0a0b0e;
   --artifact-quorum-fill: #101a33;
+  --artifact-eB: #b79cff;
   --artifact-tip-bg: #f5f7fb;
   --artifact-tip-text: #0a0b0e;
 }
@@ -81,6 +83,9 @@ h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); margin-bottom: 14px; }
 h3 { font-size: 1.3rem; font-weight: 500; }
 p { margin: 0 0 10px; }
 a { color: var(--artifact-primary-brand); }
+.crumb { margin: -24px 0 28px; font-size: 14px; }
+.crumb a { color: var(--artifact-text-secondary); text-decoration: none; }
+.crumb a:hover { color: var(--artifact-primary-brand); }
 .eyebrow { display: block; font-family: "SF Mono", "IBM Plex Mono", "Cascadia Code", Consolas, monospace; font-size: 12px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--artifact-text-secondary); margin-bottom: 12px; }
 code, .mono { font-family: "SF Mono", "IBM Plex Mono", Consolas, monospace; font-size: 13px; }
 code { background: var(--artifact-background-light); color: var(--artifact-text-primary); padding: 1px 5px; border-radius: 4px; }
@@ -130,6 +135,7 @@ code { background: var(--artifact-background-light); color: var(--artifact-text-
 .box.c8 { background: var(--artifact-e8); border-color: transparent; }
 .box.a7 { background: var(--artifact-warning-background); border: 1.5px dashed var(--artifact-warning); }
 .box.w7 { background: var(--artifact-background-mid); border: 1.5px dashed var(--artifact-text-secondary); }
+.box.cB { background: var(--artifact-eB); border-color: transparent; }
 .box.lost { background: var(--artifact-negative-background); border-color: var(--artifact-negative); }
 
 /* SVG nodes */
@@ -210,6 +216,7 @@ code { background: var(--artifact-background-light); color: var(--artifact-text-
 .cell[data-s="c8"] { background: var(--artifact-e8); color: var(--artifact-on-epoch); border-color: transparent; transform: none; opacity: 1; }
 .cell[data-s="a7"] { background: var(--artifact-warning-background); color: var(--artifact-warning-text); border: 1.5px dashed var(--artifact-warning); transform: none; opacity: 1; }
 .cell[data-s="w7"] { background: var(--artifact-background-mid); color: var(--artifact-text-secondary); border: 1.5px dashed var(--artifact-text-secondary); transform: none; opacity: 1; }
+.cell[data-s="cB"] { background: var(--artifact-eB); color: var(--artifact-on-epoch); border-color: transparent; transform: none; opacity: 1; }
 .cell[data-s="lost"] { background: var(--artifact-negative-background); color: var(--artifact-negative-text); border-color: var(--artifact-negative); text-decoration: line-through; transform: scale(.9); opacity: .9; }
 .cell[data-s="drop"] { background: var(--artifact-background); color: var(--artifact-text-secondary); border: 1px dashed var(--artifact-border-dark); text-decoration: line-through; transform: scale(.9); opacity: .6; }
 .hw { position: absolute; top: -5px; bottom: -5px; width: 3px; margin-left: -3px; border-radius: 2px; background: var(--artifact-text-primary); transition: left .45s ease; }
@@ -285,16 +292,18 @@ section.after { margin-top: 72px; }
 <body>
 <main>
 
+<nav class="crumb interactive-only" aria-label="Breadcrumb"><a href="../">← All artifacts</a></nav>
+
 <header data-glean-id="hero">
   <span class="eyebrow">KRaft · two data centers · one partition, RF = 4</span>
   <h1>The isolated leader: from link cut to truncation</h1>
-  <p class="lede">Step through one partition while the DC-A ↔ DC-B link is down and then restored. Watch who leads, which ISR each side believes in, where the high watermark sits, and which records survive. Use the switch to choose where the active controller sits at the moment of the cut.</p>
-  <p class="assume" data-glean-id="hero-assumptions"><b>Assumptions:</b> 4 brokers split 2 + 2, 3 KRaft controllers split 2 (DC-A) + 1 (DC-B), with the active controller in DC-A or DC-B. Broker 3 in DC-B leads the partition at epoch 7. Kafka defaults (<code>broker.session.timeout.ms</code> 9 s, <code>replica.lag.time.max.ms</code> 30 s, <code>controller.quorum.fetch.timeout.ms</code> 2 s, <code>controller.quorum.election.timeout.ms</code> 1 s), <code>min.insync.replicas</code> ≤ 2, unclean leader election disabled. Offsets are illustrative.</p>
+  <p class="lede">Step through one partition while the DC-A ↔ DC-B link is down and then restored. Watch who leads, which ISR each side believes in, where the high watermark sits, and which records survive. Choose a scenario: the active controller in DC-A or DC-B at the moment of the cut, or a <b>split brain</b> caused by forcing a quorum in DC-B while DC-A is still alive.</p>
+  <p class="assume" data-glean-id="hero-assumptions"><b>Assumptions:</b> 4 brokers split 2 + 2, 3 KRaft controllers split 2 (DC-A) + 1 (DC-B), with the active controller in DC-A or DC-B. Broker 3 in DC-B leads the partition at epoch 7. Kafka defaults (<code>broker.session.timeout.ms</code> 9 s, <code>replica.lag.time.max.ms</code> 30 s, <code>controller.quorum.fetch.timeout.ms</code> 2 s, <code>controller.quorum.election.timeout.ms</code> 1 s), <code>min.insync.replicas</code> ≤ 2, unclean leader election disabled. In the split-brain scenario, an operator force-recovers controller 3 as a single-voter quorum while DC-A is still running. Offsets are illustrative.</p>
 </header>
 
 <div class="bar interactive-only" data-glean-id="controls" role="group" aria-label="Step controls">
-  <div class="mode" data-glean-id="mode-toggle"><span>Active controller at the cut</span>
-    <div class="seg" id="mode" role="group" aria-label="Active controller location"><button type="button" data-mode="A" aria-pressed="true">DC-A</button><button type="button" data-mode="B" aria-pressed="false">DC-B</button></div>
+  <div class="mode" data-glean-id="mode-toggle"><span>Scenario</span>
+    <div class="seg" id="mode" role="group" aria-label="Scenario"><button type="button" data-mode="A" aria-pressed="true">Active ctrl in DC-A</button><button type="button" data-mode="B" aria-pressed="false">Active ctrl in DC-B</button><button type="button" data-mode="C" aria-pressed="false">Split brain</button></div>
   </div>
   <button type="button" class="btn" id="prev" aria-label="Previous step">← Back</button>
   <div class="dots" id="dots"></div>
@@ -344,6 +353,7 @@ section.after { margin-top: 72px; }
           <path class="p raft" id="raft3-c2" d="M370 80 C 460 70, 540 74, 616 84"/>
         </g>
         <text class="svglbl bad" id="lbl-alt" x="508" y="216">AlterPartition ✕</text>
+        <text class="svglbl bad" id="lbl-two" x="450" y="204" text-anchor="middle">two quorums ⚠</text>
         <text class="svglbl bad" id="lbl-c3" x="690" y="130" text-anchor="middle">uncommitted metadata only</text>
         <text class="svglbl warn" id="lbl-ofle" x="362" y="196" text-anchor="middle">OffsetForLeaderEpoch(7) → 1000</text>
         <!-- 3. nodes -->
@@ -373,6 +383,7 @@ section.after { margin-top: 72px; }
         <span><i class="box a7"></i>epoch 7, acked to acks=1, not committed</span>
         <span><i class="box w7"></i>epoch 7, acks=all still waiting</span>
         <span><i class="box c8"></i>epoch 8 (new leader)</span>
+        <span><i class="box cB"></i>committed in DC-B's forced timeline (split brain)</span>
         <span><i class="box lost"></i>truncated</span>
       </div>
     </div>
@@ -409,6 +420,7 @@ section.after { margin-top: 72px; }
     <div data-glean-id="takeaway-acks1"><strong>acks=1 in the cut-off DC loses data</strong><span>Those writes are acknowledged above the frozen high watermark, then truncated after the heal. Nothing reports an error.</span></div>
     <div data-glean-id="takeaway-acksall"><strong>acks=all + idempotence is safe</strong><span>Producers only see timeouts and retries. Offset commits surface as <code>COORDINATOR_NOT_AVAILABLE</code> until clients reach the new leader.</span></div>
     <div data-glean-id="takeaway-controller"><strong>The active controller's location only shifts timing</strong><span>If it sits in the minority DC, it resigns after about 2 s and DC-A elects a new one. Failover takes a few seconds longer, but the outcome is the same.</span></div>
+    <div data-glean-id="takeaway-splitbrain"><strong>Split brain needs a manual override</strong><span>Kafka never builds a second quorum by itself. It happens when someone forces one in DC-B while DC-A is still alive. Both sides then commit, and one side's acknowledged writes are lost at recovery. Confirm the other site is really down and keep it down first, or use a 2.5 DC tie-breaker.</span></div>
     <div data-glean-id="takeaway-minisr"><strong>min ISR decides the quorum side too</strong><span>With RF = 4 split 2 + 2, the new ISR is {1, 2}. If <code>min.insync.replicas</code> is 3, DC-A also rejects acks=all writes and commits.</span></div>
   </div>
 </section>
@@ -428,6 +440,9 @@ section.after { margin-top: 72px; }
     <li><a href="https://kafka.apache.org/41/configuration/broker-configs/" target="_blank" rel="noopener">Apache Kafka broker configs</a>: <code>min.insync.replicas</code>, <code>unclean.leader.election.enable</code>, controller quorum settings.</li>
     <li><a href="https://cwiki.apache.org/confluence/x/Li7cC" target="_blank" rel="noopener">KIP-595</a>: Raft for the metadata quorum. A metadata record is committed once a majority of voters has it.</li>
     <li><a href="https://kafka.apache.org/43/generated/kafka_config.html" target="_blank" rel="noopener">Apache Kafka configuration</a>: <code>controller.quorum.fetch.timeout.ms</code> (a leader resigns without fetches from a majority) and <code>controller.quorum.election.timeout.ms</code>.</li>
+    <li><a href="https://docs.confluent.io/operator/current/co-disaster-recovery.html" target="_blank" rel="noopener">Confluent for Kubernetes: recover a multi-region KRaft cluster from quorum loss</a>: force-standalone recovery creates a new metadata timeline. If the failed region's controllers come back and can reach each other, they form a second, competing quorum (split brain).</li>
+    <li><a href="https://docs.confluent.io/platform/current/multi-dc-deployments/multi-region-architectures.html" target="_blank" rel="noopener">Confluent multi-datacenter architectures</a>: a 2.5 DC layout (a light third site with controllers only) keeps the quorum through any single DC failure.</li>
+    <li><a href="https://github.com/Aiven-Open/kraft-last-standing" target="_blank" rel="noopener">Aiven-Open/kraft-last-standing</a>: an open-source tool that shrinks a lost quorum to one surviving voter. Its docs warn that such recovery locks in data loss.</li>
     <li><a href="https://kafka.apache.org/38/operations/kraft/" target="_blank" rel="noopener">KRaft operations</a>: controller quorum and the 3-controller recommendation.</li>
   </ul>
 </section>
@@ -440,8 +455,8 @@ section.after { margin-top: 72px; }
   var BROKERS = ['b1', 'b2', 'b3', 'b4'];
   var CTRLS = ['c1', 'c2', 'c3'];
   var PATHS = ['hb3-b1','hb3-b2','hb3-b3','hb3-b4','raft3-c1','raft3-c2','hb-b1','hb-b2','hb-b3','hb-b4','raft-c2','raft-c3','fx-b1-b3','fx-b2-b3','fx-b4-b3','fx-b2-b1','fx-b3-b1','fx-b4-b1','alt-b3','ofle-b3-b1'];
-  var CMAP = { '7': 'c7', 'a': 'a7', 'w': 'w7', '8': 'c8', 'x': 'lost', 'y': 'drop', '.': 'empty' };
-  var CTXT = { c7: 'e7', a7: 'e7', w7: 'e7', c8: 'e8', lost: '✕', drop: '–', empty: '' };
+  var CMAP = { 'B': 'cB', '7': 'c7', 'a': 'a7', 'w': 'w7', '8': 'c8', 'x': 'lost', 'y': 'drop', '.': 'empty' };
+  var CTXT = { cB: 'B', c7: 'e7', a7: 'e7', w7: 'e7', c8: 'e8', lost: '✕', drop: '–', empty: '' };
   var L0 = '7777........', SB = '7777aaaww...', E8 = '77778888888.', TR = '7777xxxyy...';
 
   var CLIENTS = [
@@ -640,11 +655,118 @@ section.after { margin-top: 72px; }
     return B;
   })();
 
-  var ALL_LABELS = ['lbl-alt', 'lbl-ofle', 'lbl-c3'];
-  var LBL_CLS = { 'lbl-alt': 'bad', 'lbl-ofle': 'warn', 'lbl-c3': 'bad' };
+  var STEPS_C = (function () {
+    var C = clone(STEPS_A.slice(0, idx(STEPS_A, 'shrink') + 1));
+    var SB5 = '7777BBBBB...', SB7 = '7777BBBBBBB.', TRB = '7777xxxxxxx.';
+    var CUTTAGS = ['keeps quorum · 2 of 3', 'lost quorum · looks dead'];
+    var TWO = ['quorum · voters {1,2,3}', 'forced quorum · voter {3}'];
+    var CTRL2 = { c1: ['active', 'active · voters {1,2,3}'], c2: ['', 'voter'], c3: ['active', 'forced · voters {3}'] };
+    var BR2 = { b1: ['newleader', 'leader · DC-A timeline'], b2: ['', 'follower of 1'], b3: ['leader', 'leader · DC-B timeline'], b4: ['', 'follower of 3'] };
+    var ON2 = CUT_ON.concat(['fx-b2-b1', 'hb3-b3', 'hb3-b4', 'fx-b4-b3']);
+    var KV2 = 'DC-A: leader 1, ISR {1,2} · DC-B: leader 3, ISR {3,4}';
+    function step(o) {
+      var d = { link: 'cut', labels: [], broken: [] };
+      for (var k in o) d[k] = o[k];
+      return d;
+    }
+    C.push(step({
+      key: 'misdiag', time: '+ minutes', title: 'From DC-B, the cluster looks dead',
+      tagA: CUTTAGS[0], tagB: CUTTAGS[1],
+      ctrl: { c1: ['active', 'active controller'], c2: ['', 'voter'], c3: ['lost', 'no majority'] },
+      br: { b1: ['newleader', 'leader · epoch 8'], b2: ['', 'follower of 1'], b3: ['zombie', 'fenced · still "leads"'], b4: ['fenced', 'fenced · follows 3'] },
+      on: CUT_ON.concat(['fx-b4-b3', 'fx-b2-b1']), broken: CUT_BROKEN,
+      logs: { b1: E8, b2: E8, b3: SB, b4: SB }, hw: { b1: 1007, b2: 1007, b3: 1000, b4: 1000 },
+      kv: ['Leader 1 · e8 · ISR {1,2} (DC-A only)', 'Leader · e7 · shrink not confirmed', 'Broker 1: 1007 · Broker 3: 1000'],
+      cl: { pa: ['ok', 'Writes to broker 1'], pb: ['err', 'Every request times out'], p1: ['risk', 'Acked writes above a frozen HW'], cb: ['err', 'COORDINATOR_NOT_AVAILABLE'] },
+      body: 'Seen from DC-B, nothing works: controller 3 has no quorum, brokers 3 and 4 are fenced, and every acks=all write and offset commit fails. From inside DC-B, a cut link and a real DC-A outage look exactly the same. Meanwhile DC-A is healthy and serving its clients.',
+      look: '<b>Before any recovery:</b> use a path that doesn\'t go through the cut link (an out-of-band management network, monitoring at a third site, a phone call) to check whether DC-A is really down. If it might come back, wait.',
+      basis: 'Confluent KRaft disaster-recovery guidance: if the failed region might come back, wait for it instead of running recovery.'
+    }));
+    C.push(step({
+      key: 'force', time: 'manual action', title: 'An operator forces a standalone quorum in DC-B',
+      tagA: TWO[0], tagB: TWO[1], dcA: 'quorum', dcB: 'quorum',
+      ctrl: CTRL2,
+      br: { b1: ['newleader', 'leader · epoch 8'], b2: ['', 'follower of 1'], b3: ['zombie', 'fenced · still "leads"'], b4: ['fenced', 'fenced · follows 3'] },
+      on: CUT_ON.concat(['fx-b2-b1', 'fx-b4-b3']), broken: ['hb-b3', 'hb-b4', 'raft-c3'],
+      logs: { b1: E8, b2: E8, b3: SB, b4: SB }, hw: { b1: 1007, b2: 1007, b3: 1000, b4: 1000 },
+      kv: ['DC-A: leader 1 · e8 · DC-B: leader 3 · e7 (stale)', 'Leader · e7 · shrink not confirmed', 'Broker 1: 1007 · Broker 3: 1000'],
+      cl: { pa: ['ok', 'Writes to broker 1'], pb: ['err', 'Every request times out'], p1: ['risk', 'Acked writes above a frozen HW'], cb: ['err', 'COORDINATOR_NOT_AVAILABLE'] },
+      body: 'Believing DC-A is gone, an operator stops controller 3 and rewrites its voter set to {3} alone. That is a force-standalone recovery, or editing controller.quorum.voters on a static quorum. Controller 3 restarts, elects itself and starts a new metadata timeline. That timeline stops at whatever it had copied before the cut, so it knows nothing about epoch 8 or anything else DC-A committed since. Controllers 1 and 2 still hold a majority of the original voter set {1, 2, 3}. There are now two active controllers.',
+      look: '<b>Check:</b> <code>kafka-metadata-quorum describe --status</code> run in each DC reports a different leader and a different voter set.',
+      basis: 'Force-standalone recovery creates a new metadata timeline. If the other region\'s controllers are still running, they form a second, competing quorum (Confluent for Kubernetes KRaft disaster-recovery docs).'
+    }));
+    C.push(step({
+      key: 'belect', time: 'recovery + s', title: 'DC-B fences brokers 1 and 2, and broker 3 commits again',
+      tagA: TWO[0], tagB: TWO[1], dcA: 'quorum', dcB: 'quorum',
+      ctrl: CTRL2, br: BR2,
+      on: ON2, broken: ['hb3-b1', 'hb3-b2'],
+      logs: { b1: E8, b2: E8, b3: SB5, b4: SB5 }, hw: { b1: 1007, b2: 1007, b3: 1005, b4: 1005 },
+      kv: [KV2, 'Leader · ISR {3,4} confirmed by controller 3', 'Broker 1: 1007 · Broker 3: 1005'],
+      cl: { pa: ['ok', 'Committed in the DC-A timeline'], pb: ['ok', 'Acked: committed in the DC-B timeline'], p1: ['ok', 'Acked and now committed in DC-B'], cb: ['ok', 'Commits succeed on a DC-B coordinator'] },
+      body: 'Brokers 3 and 4 register with controller 3. Brokers 1 and 2 never heartbeat it, so it fences them and drops them from the ISR. In DC-B\'s timeline, broker 3 leads the partition with ISR {3, 4}. Broker 3\'s ISR shrink is finally confirmed and its high watermark jumps: records 1000–1004 become committed, including the acks=1 writes. acks=all producers and offset commits in DC-B now succeed.',
+      look: '<b>Check:</b> <code>kafka-topics --describe</code> gives a different answer in each DC: Leader 1, ISR 1,2 in DC-A, and Leader 3, ISR 3,4 in DC-B.',
+      basis: 'ISR changes are confirmed by whichever controller the leader can reach (KIP-497). Here that is controller 3\'s forced quorum.'
+    }));
+    C.push(step({
+      key: 'both', time: 'during the cut', title: 'Split brain: both sides commit different data',
+      tagA: TWO[0], tagB: TWO[1], dcA: 'quorum', dcB: 'quorum',
+      ctrl: CTRL2, br: BR2,
+      on: ON2, broken: ['hb3-b1', 'hb3-b2'],
+      logs: { b1: E8, b2: E8, b3: SB7, b4: SB7 }, hw: { b1: 1007, b2: 1007, b3: 1007, b4: 1007 },
+      kv: [KV2, 'Leader · ISR {3,4} confirmed by controller 3', 'Both at 1007 · different records'],
+      cl: { pa: ['ok', 'Committed in the DC-A timeline'], pb: ['ok', 'Committed in the DC-B timeline'], p1: ['ok', 'Committed in the DC-B timeline'], cb: ['risk', 'Same group also active in DC-A: two coordinators'] },
+      body: 'Both DCs now accept and commit writes for the same partition. Offsets 1000–1006 exist on both sides, both committed, holding different records. Each side also runs its own group coordinator, so one consumer group can have active members in both DCs committing different offsets. Producer IDs, transactions and topic changes can diverge in the same way.',
+      look: '<b>Check:</b> compare end offsets and consumer-group offsets for the same partition from each DC. They no longer match, yet both sides look healthy.',
+      basis: 'Illustrative consequence of two quorums, each confirming its own ISR. Both sides satisfy min.insync.replicas ≤ 2 with their local replicas alone.'
+    }));
+    C.push(step({
+      key: 'heal2', time: 'heal', title: 'The link heals: two quorums, two truths',
+      link: 'up', tagA: TWO[0], tagB: TWO[1], dcA: 'quorum', dcB: 'quorum',
+      ctrl: CTRL2, br: { b1: ['newleader', 'leader · DC-A truth'], b2: ['', 'follower of 1'], b3: ['leader', 'leader · DC-B truth'], b4: ['', 'follower of 3'] },
+      on: ON2, labels: ['lbl-two'],
+      logs: { b1: E8, b2: E8, b3: SB7, b4: SB7 }, hw: { b1: 1007, b2: 1007, b3: 1007, b4: 1007 },
+      kv: ['Two voter sets: {1,2,3} and {3}', 'Leader in the DC-B timeline', 'Both at 1007 · different records'],
+      cl: { pa: ['risk', 'Two committed histories for its partition'], pb: ['risk', 'Two committed histories'], p1: ['risk', 'Two committed histories'], cb: ['risk', 'Two diverging offset histories'] },
+      body: 'Restoring the link fixes nothing. Controllers 1 and 2 still use the voter set {1, 2, 3}, and controller 3 uses {3}. Each holds committed metadata the other never saw. Both partition logs have committed records at offsets 1000–1006. Both timelines also continued from epoch 7, so the two sides may reuse the same leader epoch numbers. Kafka can\'t merge them: someone has to choose which side wins.',
+      look: '<b>First:</b> isolate one side again (stop its controllers and brokers) so the two quorums stop interacting, then back up both sides before choosing.',
+      basis: 'Two quorums disagree about cluster metadata until one of them is rebuilt (Confluent for Kubernetes KRaft disaster-recovery docs).'
+    }));
+    C.push(step({
+      key: 'truncB', time: 'recovery', title: 'Keep DC-A, rebuild DC-B: committed data is lost',
+      link: 'up', tagA: '', tagB: 'rebuilding', dcA: '', dcB: '',
+      ctrl: { c1: ['active', 'active controller'], c2: ['', 'voter'], c3: ['rejoin', 'metadata moved aside'] },
+      br: { b1: ['newleader', 'leader · epoch 8'], b2: ['', 'follower of 1'], b3: ['rejoin', 'resync from 1'], b4: ['rejoin', 'resync from 1'] },
+      on: HB_ALL.concat(['fx-b2-b1']),
+      logs: { b1: E8, b2: E8, b3: TRB, b4: TRB }, hw: { b1: 1007, b2: 1007, b3: 1000, b4: 1000 },
+      kv: ['Leader 1 · e8 · ISR {1,2} · controller 3 rejoining', 'Follower of 1 · log cut at 1000', 'Broker 1: 1007 · Broker 3: 1000'],
+      cl: { pa: ['ok', 'Kept: DC-A wins'], pb: ['lost', 'Acked, committed acks=all writes deleted'], p1: ['lost', 'Acked writes deleted'], cb: ['err', 'DC-B offset commits discarded'] },
+      body: 'In this example DC-A wins. DC-B\'s controllers and brokers are stopped, and controller 3\'s metadata is moved aside. It rejoins as an observer of controller 1, then becomes a voter again. Brokers 3 and 4 have to match broker 1, so everything they hold from offset 1000 onwards is discarded. Those writes were acknowledged and committed in DC-B, including acks=all ones. Choosing DC-B instead would delete DC-A\'s epoch-8 records. Either way, one side\'s committed data is lost.',
+      look: '<b>Watch out:</b> leader epochs may collide across the two timelines. Check that replicas are consistent after the resync, or rebuild the losing brokers\' replicas from scratch. Recover the lost records from producer-side logs or upstream systems.',
+      basis: 'Phase 2 of Confluent\'s KRaft disaster-recovery procedure: move the stale metadata aside, rejoin as an observer, then add the controller back as a voter.'
+    }));
+    C.push(step({
+      key: 'rejoinB', time: 'after recovery', title: 'One cluster again, minus DC-B\'s history',
+      link: 'up', tagA: '', tagB: '', dcA: '', dcB: '',
+      ctrl: { c1: ['active', 'active controller'], c2: ['', 'voter'], c3: ['', 'voter again'] },
+      br: { b1: ['newleader', 'leader · epoch 8'], b2: ['', 'follower · in ISR'], b3: ['', 'follower · in ISR'], b4: ['', 'follower · in ISR'] },
+      on: HB_ALL.concat(['fx-b2-b1', 'fx-b3-b1', 'fx-b4-b1']),
+      logs: { b1: E8, b2: E8, b3: E8, b4: E8 }, hw: { b1: 1007, b2: 1007, b3: 1007, b4: 1007 },
+      kv: ['Leader 1 · e8 · ISR {1,2,3,4}', 'Follower · in ISR', '1007 on all replicas'],
+      cl: { pa: ['ok', 'Writes acked by all 4 replicas'], pb: ['lost', 'Working · DC-B\'s 1000–1006 stay lost'], p1: ['lost', 'Working · DC-B\'s writes stay lost'], cb: ['warn', 'Resumes from DC-A\'s offsets'] },
+      body: 'All four replicas match broker 1 again: leader 1, epoch 8, ISR {1, 2, 3, 4}. The records DC-B committed during the split are gone from Kafka. DC-B\'s consumer-group progress went with its __consumer_offsets data. Unlike the network-partition scenarios, this loss includes acknowledged acks=all writes. The forced recovery caused it, not Kafka\'s replication.',
+      look: '<b>Prevention:</b> never force a quorum while the other site could still be alive. Shut it down or cut it off for good first (power off or isolate its controllers), and keep it down during recovery. Or add a tie-breaker controller at a third site (2.5 DC) so a forced recovery is never needed.',
+      basis: 'Confluent multi-datacenter architectures: with controllers at a light third site, the quorum survives any single DC failure.'
+    }));
+    return C;
+  })();
+
+  var ALL_LABELS = ['lbl-alt', 'lbl-ofle', 'lbl-c3', 'lbl-two'];
+  var LBL_CLS = { 'lbl-alt': 'bad', 'lbl-ofle': 'warn', 'lbl-c3': 'bad', 'lbl-two': 'bad' };
   var MODE = 'A', STEPS = STEPS_A;
+  var SETS = { A: STEPS_A, B: STEPS_B, C: STEPS_C };
   var NOTE = {
     A: '<b>Active controller in DC-A.</b> This is the simplest case: the active controller is on the majority side, so it never moves. Brokers 3 and 4 are fenced about 9 s after the cut.',
+    C: '<b>Split brain (forced recovery).</b> The same network cut, but an operator in DC-B mistakes it for a DC-A outage and forces controller 3 to run a quorum on its own. Kafka never does this by itself. It takes a manual recovery run while the other site is still alive, and it ends with one side\'s committed writes being lost.',
     B: '<b>Active controller in DC-B.</b> The active controller is on the minority side. It resigns after about 2 s, DC-A elects a new one, and fencing happens about 12 s after the cut. Same outcome, a few seconds later.'
   };
 
@@ -716,8 +838,10 @@ section.after { margin-top: 72px; }
 
   function render(i) {
     var s = STEPS[i];
-    $('dc-a').setAttribute('class', 'dc' + (s.link === 'cut' ? ' quorum' : ''));
-    $('dc-b').setAttribute('class', 'dc' + (s.link === 'cut' ? ' noquorum' : ''));
+    var ca = s.dcA !== undefined ? s.dcA : (s.link === 'cut' ? 'quorum' : '');
+    var cbb = s.dcB !== undefined ? s.dcB : (s.link === 'cut' ? 'noquorum' : '');
+    $('dc-a').setAttribute('class', 'dc' + (ca ? ' ' + ca : ''));
+    $('dc-b').setAttribute('class', 'dc' + (cbb ? ' ' + cbb : ''));
     $('tag-a').textContent = s.tagA; $('tag-b').textContent = s.tagB;
     $('link').setAttribute('class', 'link' + (s.link === 'cut' ? ' cut' : ''));
     CTRLS.forEach(function (c) { setNode(c, s.ctrl[c][0], s.ctrl[c][1]); });
@@ -791,9 +915,9 @@ section.after { margin-top: 72px; }
   function setMode(m) {
     if (m === MODE) return;
     var key = STEPS[cur].key;
-    MODE = m; STEPS = m === 'A' ? STEPS_A : STEPS_B;
+    MODE = m; STEPS = SETS[m];
     var j = idx(STEPS, key);
-    if (j < 0) j = idx(STEPS, 'cut');
+    if (j < 0) j = Math.min(cur, STEPS.length - 1);
     Array.prototype.forEach.call($('mode').querySelectorAll('button'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === m)); });
     $('modenote').innerHTML = NOTE[m];
     buildDots(); buildPrint(); go(j);

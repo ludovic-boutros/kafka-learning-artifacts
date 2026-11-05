@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Catalog of interactive technical walkthroughs and references.">
+<title>Artifacts</title>
+<style>
+:root {
+  --bg: #ffffff; --bg-light: #f1f3f6; --border: #e3e6ec; --border-dark: #cdd2db;
+  --brand: #3559e6; --brand-hover: #2442b8; --selected: #eaeefc; --on-brand: #ffffff;
+  --text: #11141a; --text-2: #5c6470;
+  color-scheme: light;
+}
+html[data-theme='dark'] {
+  --bg: #0a0b0e; --bg-light: #121419; --border: #23262e; --border-dark: #343844;
+  --brand: #6a92ff; --brand-hover: #88a8ff; --selected: #1a2030; --on-brand: #0a0b0e;
+  --text: #eef0f4; --text-2: #9aa0ad;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 16px; line-height: 1.6; letter-spacing: -0.005em;
+}
+main { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+.mono, .eyebrow, .meta, .count { font-family: "SF Mono", "IBM Plex Mono", "Cascadia Code", Consolas, monospace; }
+.eyebrow { display: block; font-size: 12px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--text-2); margin-bottom: 12px; }
+header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+h1 { font-size: clamp(2.2rem, 5.6vw, 3.6rem); font-weight: 300; line-height: 1.08; letter-spacing: -0.02em; margin: 0; }
+.lede { font-size: 1.1rem; color: var(--text-2); max-width: 62ch; margin: 18px 0 0; }
+button, input { font: inherit; color: inherit; }
+.iconbtn { flex: none; width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border-dark); background: var(--bg); color: var(--text); cursor: pointer; }
+.iconbtn:hover { border-color: var(--brand); }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 40px 0 18px; padding-top: 22px; border-top: 1px solid var(--border); }
+.search { flex: 1 1 260px; max-width: 420px; height: 40px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--border-dark); background: var(--bg); color: var(--text); }
+.search::placeholder { color: var(--text-2); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--border-dark); background: var(--bg); color: var(--text-2); font-size: 13px; cursor: pointer; }
+.chip:hover { color: var(--text); border-color: var(--brand); }
+.chip[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
+.count { margin-left: auto; font-size: 12px; color: var(--text-2); }
+
+.grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.card { display: flex; flex-direction: column; gap: 10px; height: 100%; padding: 22px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); text-decoration: none; transition: border-color .15s, background-color .15s; }
+.card:hover { border-color: var(--brand); background: var(--selected); }
+.card h2 { font-size: 1.2rem; font-weight: 500; line-height: 1.25; letter-spacing: -0.01em; margin: 0; }
+.card p { margin: 0; color: var(--text-2); font-size: 14.5px; }
+.meta { display: flex; justify-content: space-between; gap: 12px; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); }
+.ctags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 6px; }
+.ctags span { font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--bg-light); color: var(--text-2); }
+.open { font-size: 14px; font-weight: 500; color: var(--brand); }
+.empty { padding: 40px 0; color: var(--text-2); }
+footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-2); }
+footer code { font-family: "SF Mono", Consolas, monospace; font-size: 12.5px; background: var(--bg-light); color: var(--text); padding: 1px 5px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <span class="eyebrow">Interactive walkthroughs &amp; references</span>
+      <h1>Artifacts</h1>
+      <p class="lede">Self-contained pages explaining architectures, failure modes and operational procedures. Pick one to open it.</p>
+    </div>
+    <button type="button" class="iconbtn" id="theme" aria-label="Toggle light or dark theme">◐</button>
+  </header>
+
+  <div class="tools" role="search">
+    <input class="search" id="q" type="search" placeholder="Search title, description or tag…  ( / )" aria-label="Search artifacts" autocomplete="off">
+    <div class="tags" id="tags" role="group" aria-label="Filter by tag"></div>
+    <span class="count" id="count" aria-live="polite"></span>
+  </div>
+
+  <ul class="grid" id="grid"></ul>
+  <p class="empty" id="empty" hidden>No artifact matches this filter.</p>
+  <noscript><p class="empty">This menu needs JavaScript. Browse the folders of the repository directly.</p></noscript>
+
+  <footer>To add an artifact, put it in its own folder with an <code>index.html</code> and add an entry to <code>catalog.js</code>.</footer>
+</main>
+
+<script src="catalog.js"></script>
+<script>
+(function () {
+  'use strict';
+  var root = document.documentElement;
+  var KEY = 'artifacts-theme';
+  var saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  var dark = saved ? saved === 'dark' : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+  root.setAttribute('data-theme', dark ? 'dark' : 'light');
+  document.getElementById('theme').addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem(KEY, next); } catch (e) {}
+  });
+
+  var items = (window.ARTIFACTS || []).slice().sort(function (a, b) {
+    return (b.updated || '').localeCompare(a.updated || '') || a.title.localeCompare(b.title);
+  });
+  var grid = document.getElementById('grid'), q = document.getElementById('q');
+  var tagBox = document.getElementById('tags'), count = document.getElementById('count'), empty = document.getElementById('empty');
+  var active = null;
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function href(p) { return String(p).replace(/^\/+|\/+$/g, '') + '/'; }
+
+  var cards = items.map(function (a) {
+    var li = el('li');
+    var card = el('a', 'card'); card.href = href(a.path);
+    var meta = el('div', 'meta');
+    meta.appendChild(el('span', '', a.type || 'Artifact'));
+    if (a.updated) { var t = el('time', '', a.updated); t.dateTime = a.updated; meta.appendChild(t); }
+    card.appendChild(meta);
+    card.appendChild(el('h2', '', a.title));
+    card.appendChild(el('p', '', a.description));
+    var ct = el('div', 'ctags');
+    (a.tags || []).forEach(function (t) { ct.appendChild(el('span', '', t)); });
+    card.appendChild(ct);
+    card.appendChild(el('span', 'open', 'Open →'));
+    li.appendChild(card);
+    grid.appendChild(li);
+    var hay = [a.title, a.description, a.type || '', (a.tags || []).join(' ')].join(' ').toLowerCase();
+    return { li: li, hay: hay, tags: a.tags || [] };
+  });
+
+  var allTags = [];
+  items.forEach(function (a) { (a.tags || []).forEach(function (t) { if (allTags.indexOf(t) < 0) allTags.push(t); }); });
+  allTags.sort(function (x, y) { return x.localeCompare(y); });
+  allTags.forEach(function (t) {
+    var b = el('button', 'chip', t); b.type = 'button'; b.setAttribute('aria-pressed', 'false');
+    b.addEventListener('click', function () {
+      active = active === t ? null : t;
+      Array.prototype.forEach.call(tagBox.children, function (c) { c.setAttribute('aria-pressed', String(c.textContent === active)); });
+      apply();
+    });
+    tagBox.appendChild(b);
+  });
+
+  function apply() {
+    var words = q.value.toLowerCase().split(/\s+/).filter(Boolean), shown = 0;
+    cards.forEach(function (c) {
+      var ok = (!active || c.tags.indexOf(active) >= 0) && words.every(function (w) { return c.hay.indexOf(w) >= 0; });
+      c.li.hidden = !ok; if (ok) shown++;
+    });
+    count.textContent = shown + ' of ' + cards.length + (cards.length === 1 ? ' artifact' : ' artifacts');
+    empty.hidden = shown > 0;
+  }
+  q.addEventListener('input', apply);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === '/' && document.activeElement !== q) { e.preventDefault(); q.focus(); }
+    if (e.key === 'Escape' && document.activeElement === q) { q.value = ''; apply(); }
+  });
+  apply();
+})();
+</script>
+</body>
+</html>
